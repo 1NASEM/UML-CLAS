@@ -1,0 +1,174 @@
+
+using System;
+
+public class Customer
+{
+    public string Name;
+    public string Address;
+    public string PhoneNumber;
+    public string EmailAddress;
+    public List<Order> Orders;
+
+    public Customer(string name, string address, string phoneNumber, string emailAddress, List<Order> orders)
+    {
+        Name = name;
+        Address = address;
+        PhoneNumber = phoneNumber;
+        EmailAddress = emailAddress;
+        Orders = orders;
+    }
+}
+
+
+public class Order
+{
+    public Customer Customer;
+    public string CustomerName;
+    public string CustomerAddress;
+    public DateTime OrderDate;
+    public string OrderStatus;
+    public List<OrderDetail> OrderDetails;
+
+    public Order(Customer customer, string customerName, string customerAddress, DateTime orderDate, string orderStatus, List<OrderDetail> orderDetails)
+    {
+        Customer = customer;
+        CustomerName = customerName;
+        CustomerAddress = customerAddress;
+        OrderDate = orderDate;
+        OrderStatus = orderStatus;
+        OrderDetails = orderDetails;
+    }
+
+    public decimal CalcSubTotal()
+    {
+        return OrderDetails.Sum(od => od.CalcSubTotal());
+    }
+
+    public decimal CalcTax()
+    {
+        return CalcSubTotal() * 0.13m;
+    }
+
+    public decimal CalcTotal()
+    {
+        return CalcSubTotal() + CalcTax();
+    }
+
+    public decimal CalcTotalWeight()
+    {
+        return OrderDetails.Sum(od => od.CalcWeight());
+    }
+}
+
+
+public class OrderDetail
+{
+    public Item Item;
+    public int Quantity;
+
+    public OrderDetail(Item item, int quantity)
+    {
+        Item = item;
+        Quantity = quantity;
+    }
+
+    public decimal CalcSubTotal()
+    {
+        return Item.Price * Quantity;
+    }
+
+    public decimal CalcWeight()
+    {
+        return Item.ShippingWeight * Quantity;
+    }
+}
+
+
+public class Item
+{
+    public string Description;
+    public decimal Price;
+    public decimal ShippingWeight;
+    public string TaxStatus;
+
+    public Item(string description, decimal price, decimal shippingWeight, string taxStatus)
+    {
+        Description = description;
+        Price = price;
+        ShippingWeight = shippingWeight;
+        TaxStatus = taxStatus;
+    }
+
+    public bool InStock()
+    {
+ 
+        return true;
+    }
+}
+
+
+public abstract class Payment
+{
+    public float Amount;
+
+    public Payment(float amount)
+    {
+        Amount = amount;
+    }
+
+    public abstract bool Authorized();
+}
+
+
+public class Cash : Payment
+{
+    public float CashTendered;
+
+    public Cash(float amount, float cashTendered) : base(amount)
+    {
+        CashTendered = cashTendered;
+    }
+
+    public override bool Authorized()
+    {
+        return CashTendered >= Amount;
+    }
+}
+
+
+public class Check : Payment
+{
+    public string Name;
+    public string BankID;
+
+    public Check(float amount, string name, string bankID) : base(amount)
+    {
+        Name = name;
+        BankID = bankID;
+    }
+
+    public override bool Authorized()
+    {
+        
+        return true;
+    }
+}
+
+
+public class Credit : Payment
+{
+    public string Name;
+    public string Type;
+    public DateTime ExpDate;
+
+    public Credit(float amount, string name, string type, DateTime expDate) : base(amount)
+    {
+        Name = name;
+        Type = type;
+    }
+
+    public override bool Authorized()
+    {
+        throw new NotImplementedException();
+    }
+}
